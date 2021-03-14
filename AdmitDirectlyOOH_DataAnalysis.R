@@ -1,0 +1,465 @@
+
+
+
+```{r Setup and DB Connection, include=FALSE}
+source("1_setup_environment.R")
+library(dataMaid)
+library(DBI)
+library(flextable)
+```
+
+##Data Analysis for Member_History Table  
+```{r,include= FALSE}
+con <- DBI::dbConnect(odbc::odbc(), 
+                      Driver = "SQL Server", 
+                      Server =  "pcnjdevsql02",
+                      Database = "PIE_Dev",
+                      Trusted_Connection = "True")
+dbListTables(con)
+
+dbGetInfo(con)
+```
+
+```{r, include= FALSE}
+tbl_long_cols_2 <- function(con, table) {
+    cols_sorted <-
+        odbc::odbcConnectionColumns(con, table) %>%
+        dplyr::arrange(column_size) %>%
+        pull(name)
+    
+    dplyr::tbl(con, table) %>%
+        dplyr::select(tidyselect::all_of(cols_sorted))
+}
+AdmitDirectlyOOH<- tbl_long_cols_2(con, "RSPM_AdmitDirectlyOOH")%>%
+    collect()
+
+```
+
+#1.1.0 Observing the data structure
+#Understanding Number of rows and columns
+```{r dataset, rows and column}
+dim(AdmitDirectlyOOH)
+
+```
+
+## Initial Information with description of their structure
+```{r dataset, parameters}
+str(AdmitDirectlyOOH)
+
+```
+## Creating a dataframe from the data
+```{r}
+AdmitDirectlyOOH <- data.frame(AdmitDirectlyOOH)
+```
+# Number of rows and Cols
+```{r}
+nrow(AdmitDirectlyOOH)
+ncol(AdmitDirectlyOOH)
+```
+```{r}
+names(AdmitDirectlyOOH)
+summary(AdmitDirectlyOOH)
+```
+
+#Checking data for any missing values
+```{r}
+colSums(sapply(AdmitDirectlyOOH, is.na))
+```
+
+
+# ```{r}
+# length(unique(RSPM_DataSet$ProviderType))
+# ```
+# ##Provider Type with Frequency and unique Provider Type
+# ```{r ,ProviderType_tb}
+# #length(unique(RSPM_DataSet$ProviderType))
+# # ProviderType_tb<-data.frame(table(RSPM_DataSet[,"ProviderType"]))
+# # ProviderType_tb <- ProviderType_tb %>% 
+# #             arrange(desc(Freq))
+# # ProviderType_tb <-flextable(ProviderType_tb)
+# # ProviderType_tb
+# ```
+# ## Overall record in 26 unique provider County
+# ```{r}
+# length(unique(RSPM_DataSet$ProviderCounty))
+# # table(RSPM_DataSet$ProviderCounty,RSPM_DataSet$OOH )
+# ```
+# ```{r, include=FALSE}
+# ProviderCounty_tb<-data.frame(table(RSPM_DataSet[,"ProviderCounty"]))
+# ProviderCounty_tb <- ProviderCounty_tb %>% 
+#     arrange(desc(Freq))
+# ProviderCounty_tb <-flextable(ProviderCounty_tb)
+# ProviderCounty_tb
+# ```
+# ##How many Unique Diagnosis1 
+# ```{r}
+# length(unique(RSPM_DataSet$Diagnosis1))
+# #table(RSPM_OOH_Claims_History$ProviderCounty)
+# ```
+# 
+# ```{r, include=FALSE}
+# # Diagnosis1_tb<- data.frame( table(RSPM_DataSet[,"Diagnosis1"]))
+# # Diagnosis1_tb <- Diagnosis1_tb %>% 
+# #             arrange(desc(Freq))
+# #Diagnosis1_tb
+# ```
+# 
+# ## Find the number of unique member in each Diagnosis1 
+# ```{r}
+# Tb_Diagnosis1  <-RSPM_DataSet %>%
+#     select(Diagnosis1 ,memberid)%>%
+#     group_by(Diagnosis1 )%>%
+#     summarise(dismem_ct=n_distinct(memberid))
+# Tb_Diagnosis1 <-Tb_Diagnosis1  %>%
+#     arrange(desc(dismem_ct))
+# Tb_Diagnosis1 
+# ```
+# 
+# ```{r}
+# length(unique(RSPM_DataSet$OOH))
+# ```
+# ## How many unique member in the dataset
+# ```{r , function}
+# length(unique(RSPM_DataSet$memberid))
+# ```
+# 
+# #This dataset contains 148199 unique members 
+# 
+# ##Distribution of OOH in the dataset
+# ```{r}
+# tb <-table((RSPM_DataSet$OOH))
+# prop.table(tb)*100
+# 
+# ```
+# ## how many unique member in OOH pacement catagory
+# ```{r}
+# OOH_df <- RSPM_DataSet %>%
+#     select(OOH,memberid)%>%
+#     group_by( OOH)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     mutate(pct =(dismem_ct/sum(dismem_ct)*100) )%>%
+#     arrange(desc(dismem_ct))
+# OOH_df 
+# 
+# ```
+# ## How many unique member in different age and OOH placement
+# 
+# ```{r}
+# OOH_agedf <- RSPM_DataSet %>%
+#     select(OOH,memberid,MemberAge,MemberGender,MemberEnrollmentAge,MemberRaceEthnicity)%>%
+#     group_by(MemberAge, OOH)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     arrange(desc(dismem_ct))
+# OOH_agedf 
+# ```
+# ## How many unique member in Each age and OOH placement is 1
+# ```{r}
+# OOH_df <- RSPM_DataSet %>%
+#     select(OOH,memberid,MemberAge,MemberGender,MemberEnrollmentAge,MemberRaceEthnicity)%>%
+#     group_by(MemberAge, OOH)%>%
+#     filter(OOH ==1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     arrange(desc(dismem_ct))
+# OOH_df 
+# 
+# ```
+# ## Find the unique member in each enrollment age and placed in OOH
+# 
+# ```{r}
+# Tb_MemDemo  <-RSPM_DataSet %>%
+#     select(MemberEnrollmentAge,OOH,memberid,MemberAge,MemberGender)%>%
+#     group_by(MemberEnrollmentAge,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))
+# Tb_EnrollAge  <-Tb_MemDemo   %>%
+#     arrange(desc(dismem_ct))
+# Tb_EnrollAge  
+# ```
+# ## Unique Member in each gender
+# ```{r}
+# OOH_Gender  <-RSPM_DataSet %>%
+#     select(OOH,memberid,MemberAge,MemberGender)%>%
+#     group_by(MemberGender,OOH )%>%
+#     summarise(dismem_ct=n_distinct(memberid))
+# 
+# OOH_Gender
+# ```
+# ## Member EnrollmentAge Vs OOH
+# ```{r}
+# xtabs( ~ MemberEnrollmentAge+OOH,RSPM_DataSet)
+# ```
+# ## Unique Member in each MemberEnrollmentAge with OOH placement
+# ```{r}
+# OOH_EnrollAge  <-RSPM_DataSet %>%
+#     select(OOH,memberid,MemberEnrollmentAge,MemberGender)%>%
+#     group_by(MemberEnrollmentAge,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     arrange(desc(dismem_ct))
+# 
+# OOH_EnrollAge
+# ```
+# ## Age group Vs OOH
+# ```{r}
+# #xtabs(~ MemberAgeGroup+OOH,data=RSPM_DataSet)
+# ```
+# ## Unique Member in each MemberAgeGroup with OOH placement
+# ```{r}
+# OOH_AgeGr  <-RSPM_DataSet %>%
+#     select(OOH,memberid,MemberAgeGroup,MemberGender)%>%
+#     group_by(MemberAgeGroup,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     arrange(desc(dismem_ct))
+# 
+# OOH_AgeGr
+# ```
+# 
+# 
+# 
+# ## Gender vs OOH
+# ```{r}
+# table(RSPM_DataSet$MemberGender,RSPM_DataSet$OOH)
+# ```
+# ## Unique Member in each MemberGender with OOH placement
+# ```{r}
+# OOH_MemberGender  <-RSPM_DataSet %>%
+#     select(OOH,memberid,MemberAgeGroup,MemberGender)%>%
+#     group_by(MemberGender,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     arrange(desc(dismem_ct))
+# 
+# OOH_MemberGender
+# ```
+# 
+# 
+# 
+# ## Race vs OOH
+# ```{r}
+# # table(RSPM_DataSet$MemberRaceEthnicity,RSPM_DataSet$OOH)
+# xtabs(~ MemberRaceEthnicity+OOH, data=RSPM_DataSet)
+# ```
+# ## Service Code vs OOH
+# ```{r}
+# length(unique(RSPM_DataSet$ServiceCode))
+# #xtabs(~ ServiceCode+OOH, data=RSPM_DataSet)
+# ```
+# ## Find the number of unique member in each Service code and OOH 
+# ```{r}
+# Tb_ServiceCode  <-RSPM_DataSet %>%
+#     select(ServiceCode,OOH,memberid)%>%
+#     group_by(ServiceCode,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))
+# Tb_ServiceCode <- Tb_ServiceCode   %>%
+#     arrange(desc(dismem_ct))
+# Tb_ServiceCode 
+# ```
+# ## Find the number of unique member in each member county and OOH 
+# ```{r}
+# Tb_county  <-RSPM_DataSet %>%
+#     select(MemberZipCode,OOH,memberid)%>%
+#     group_by(MemberZipCode,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))
+# Tb_county  <- Tb_county   %>%
+#     arrange(desc(dismem_ct))
+# Tb_county  
+# ```
+# 
+# ## Find the number of unique member in different diagnosis1 who are placed in OOH 
+# 
+# ```{r}
+# Tb_Diagnosis1  <-RSPM_DataSet %>%
+#     select(Diagnosis1,OOH,memberid)%>%
+#     group_by(Diagnosis1,OOH )%>%
+#     filter(OOH == 1)%>%
+#     summarise(dismem_ct=n_distinct(memberid))
+# Tb_Diagnosis1  <- Tb_Diagnosis1   %>%
+#     arrange(desc(dismem_ct))
+# Tb_Diagnosis1  
+# ```
+# 
+# ## Is there any significant relation between Age/Race/gender with OOH Placement
+# ```{r, include=FALSE}
+# #  model1 <-glm(OOH ~ MemberAge+MemberGender+MemberRaceEthnicity,data=RSPM_DataSet, family=binomial())
+# # summary(model1)
+# ```
+# 
+# ##ggplot Gender Vs OOH
+# ```{r}
+# df_Gender <- RSPM_DataSet%>%
+#     
+#     group_by(MemberGender,OOH )%>%
+#     summarise(count=n())
+# df_Gender <- data.frame(df_Gender)
+# plot_gender<- ggplot(data=df_Gender,aes(x =MemberGender,y=count,fill = as.factor(OOH)))+ geom_bar(stat="identity",position = position_dodge())+theme_minimal()
+# plot_gender
+# ```
+# ##ggplot Race Vs OOH
+# ```{r}
+# df_Race <- RSPM_DataSet%>%
+#     
+#     group_by(MemberRaceEthnicity,OOH )%>%
+#     summarise(count=n())
+# df_Race <- data.frame(df_Race)
+# plot_Race<- ggplot(data=df_Race,aes(x =MemberRaceEthnicity,y=count,fill = as.factor(OOH)))+ geom_bar(stat="identity",position = position_dodge())+theme_minimal()
+# plot_Race
+# ```
+# ##ggplot AgeGr Vs OOH
+# ```{r}
+# df_AgeGr <- RSPM_DataSet%>%
+#     
+#     group_by(MemberAgeGroup,OOH )%>%
+#     summarise(count=n())
+# df_AgeGr <- data.frame(df_AgeGr)
+# plot_AgeGr<- ggplot(data=df_AgeGr,aes(x =MemberAgeGroup,y=count,fill = as.factor(OOH)))+ geom_bar(width=1,stat="identity",position = position_dodge())+theme_minimal()
+# plot_AgeGr
+# ```
+# ##Cohort
+# ##How Many unique member in the dataset
+# ```{r}
+# ## how many unique member in OOH pacement catagory
+# 
+# df_total <- RSPM_DataSet %>%
+#     select(OOH,memberid)%>%
+#     #group_by( OOH)%>%
+#     
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     mutate(pct =(dismem_ct/sum(dismem_ct)*100) )%>%
+#     arrange(desc(dismem_ct))
+# df_total 
+# 
+# 
+# ```
+# ##Who are admitted directly to OOH without any previous Service
+# ```{r}
+# ## how many unique member in OOH pacement catagory
+# 
+# OOH_df <- RSPM_DataSet %>%
+#     select(OOH,memberid)%>%
+#     group_by( OOH)%>%
+#     summarise(dismem_ct=n_distinct(memberid))%>%
+#     mutate(pct =(dismem_ct/sum(dismem_ct)*100) )%>%
+#     arrange(desc(dismem_ct))
+# OOH_df 
+# 
+# 
+# ```
+# ## 3729 are admitted directly to OOH without any previous Services
+# 
+# ## There is no member who had a service previously before placed in OOH
+# 
+# 
+# ## Clinical Profile
+# ## a. Diagnosis
+# ```{r}
+# OOH_diag <- RSPM_DataSet %>%
+#     select(memberid,Diagnosis1,OOH)%>%
+#     group_by(memberid)%>%
+#     filter( OOH== 1)%>%
+#     summarise(disDiag=n_distinct(Diagnosis1))%>%
+#     arrange(desc(disDiag))
+# OOH_diag 
+# ```
+# ##Converting ICD10 code to SDoH Catagories
+# ```{r , SDoH Diagnosis,include= FALSE}
+# RSPM_DataSet<- data.frame(RSPM_DataSet)
+# RSPM_DataSet$Diagnosis1[RSPM_DataSet$Diagnosis1 == 'Z550' | RSPM_DataSet$Diagnosis1 == 'Z551'| RSPM_DataSet$Diagnosis1 == 'Z558'|RSPM_DataSet$Diagnosis1 == 'Z559'] <-"Education"
+# RSPM_DataSet$Diagnosis1[RSPM_DataSet$Diagnosis1 >= 'Z590' & RSPM_DataSet$Diagnosis1 <= 'Z599'] <-"Housing and Economic"
+# RSPM_DataSet$Diagnosis1[RSPM_DataSet$Diagnosis1 >= 'Z602' & RSPM_DataSet$Diagnosis1 <= 'Z605' |
+#                             RSPM_DataSet$Diagnosis1 == 'Z600' |
+#                             RSPM_DataSet$Diagnosis1 == 'Z608' |
+#                             RSPM_DataSet$Diagnosis1 == 'Z609']<-"Social Environment"
+# 
+# RSPM_DataSet$Diagnosis1[
+#     RSPM_DataSet$Diagnosis1 == 'Z734' | RSPM_DataSet$Diagnosis1 == 'Z7389' |
+#         RSPM_DataSet$Diagnosis1 == 'Z733' | RSPM_DataSet$Diagnosis1 == 'Z739' |
+#         RSPM_DataSet$Diagnosis1 == 'Z659' |    
+#         RSPM_DataSet$Diagnosis1 == 'Z658']<-"Stress" 
+# RSPM_DataSet$Diagnosis1[RSPM_DataSet$Diagnosis1 >= 'Z650' & RSPM_DataSet$Diagnosis1 <= 'Z655'] <-"Experiences Crime,Violence,Judicial"
+# 
+# RSPM_DataSet$Diagnosis1[RSPM_DataSet$Diagnosis1 == 'Z6221' | RSPM_DataSet$Diagnosis1 == 'Z6222' |
+#                             RSPM_DataSet$Diagnosis1 == 'Z6229' |
+#                             RSPM_DataSet$Diagnosis1 == 'Z62810' |
+#                             RSPM_DataSet$Diagnosis1 == 'Z62811' |    
+#                             RSPM_DataSet$Diagnosis1 == 'Z62812' |
+#                             RSPM_DataSet$Diagnosis1 =='Z62819']<-"Upbringing"
+# 
+# tb_SDoH<- RSPM_DataSet %>%
+#     select(Diagnosis1,memberid,OOH )%>%
+#     
+#     filter(RSPM_DataSet$Diagnosis1 %in% c('Upbringing','Experiences Crime,Violence,Judicial','Stress','Social Environment','Housing and Economic','Education'))
+# 
+# tb_SDoH_diag<-
+#     tb_SDoH %>% filter(OOH ==1)%>% 
+#     group_by(memberid)%>% 
+#     summarise(disDiag=n_distinct(Diagnosis1))%>%
+#     arrange(desc(disDiag))
+# 
+# tb_SDoH_diag
+# 
+# tb_SDoH_mem<-
+#     tb_SDoH %>% filter(OOH ==1)%>% 
+#     group_by(Diagnosis1)%>% 
+#     summarise(dismem=n_distinct(memberid))%>%
+#     arrange(desc(dismem))
+# 
+# tb_SDoH_mem
+# ```
+# ##Demographic
+# ##Race
+# ```{r}
+# df_Race <- RSPM_DataSet%>%
+#     filter(OOH==1) %>% 
+#     group_by(MemberRaceEthnicity,OOH )%>%
+#     summarise(count=n_distinct(memberid))
+# df_Race <- data.frame(df_Race)
+# # plot_Race<- ggplot(data=df_Race,aes(x =MemberRaceEthnicity,y=count,fill = as.factor(OOH)))+ geom_bar(stat="identity",position = position_dodge())+theme_minimal()
+# # plot_Race
+# ```
+# ##Gender
+# ```{r}
+# df_Gender <- RSPM_DataSet%>%
+#     filter(OOH==1) %>%
+#     group_by(MemberGender )%>%
+#     summarise(count=n_distinct(memberid))
+# df_Gender <- data.frame(df_Gender)
+# df_Gender
+# # plot_Gender<- ggplot(data=df_Gender,aes(x =MemberGender,y=count,fill = OOH))+ geom_bar(stat="identity",position = position_dodge())+theme_minimal()
+# # plot_Gender
+# ```
+# 
+# ##Zipcode Of Residence
+# ```{r}
+# df_Zip <- RSPM_DataSet%>%
+#     filter(OOH==1) %>% 
+#     group_by(MemberZipCode )%>%
+#     summarise(count=n_distinct(memberid))%>%
+#     arrange(desc(count))
+# df_Zip <- data.frame(df_Zip)
+# df_Zip
+# ```
+# ##County Of Residence
+# ```{r}
+# df_ProviderCounty <- RSPM_DataSet%>%
+#     filter(OOH==1) %>% 
+#     group_by(ProviderCounty )%>%
+#     summarise(count=n_distinct(memberid))%>%
+#     arrange(desc(count))
+# df_ProviderCounty <- data.frame(df_ProviderCounty)
+# df_ProviderCounty
+# ```
+# ## Service Profile
+# ##Number of Admission to OOH for each enrolled
+# ```{r}
+# df_admit<- RSPM_DataSet%>%
+#     filter(OOH==1) %>% 
+#     group_by(memberid )%>%
+#     summarise(count=n_distinct(admitdate))%>%
+#     arrange(desc(count))
+# df_admitdate <- data.frame(df_admit)
+# df_admitdate
+# ```
+# 
