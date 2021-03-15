@@ -40,6 +40,20 @@ AdmitDirectlyOOH<- tbl_long_cols_2(con, "RSPM_AdmitDirectlyOOH")%>%
 
 ```
 
+```{r, include= FALSE}
+tbl_long_cols_2 <- function(con, table) {
+    cols_sorted <-
+        odbc::odbcConnectionColumns(con, table) %>%
+        dplyr::arrange(column_size) %>%
+        pull(name)
+    
+    dplyr::tbl(con, table) %>%
+        dplyr::select(tidyselect::all_of(cols_sorted))
+}
+OOH_LOS<- tbl_long_cols_2(con, "RSPM_OOH_LOS")%>%
+    collect()
+
+```
 #1.1.0 Observing the data structure
 #Understanding Number of rows and columns
 ```{r dataset, rows and column}
@@ -321,6 +335,37 @@ colSums(sapply(AdmitDirectlyOOH, is.na))
 <!-- # plot_AgeGr<- ggplot(data=df_AgeGr,aes(x =MemberAgeGroup,y=count,fill = as.factor(OOH)))+ geom_bar(width=1,stat="identity",position = position_dodge())+theme_minimal() -->
 <!-- # plot_AgeGr -->
 <!-- # ``` -->
+##Converting column to catagorical Variable
+```{r}
+##SiteGroup
+AdmitDirectlyOOH <- data.frame(AdmitDirectlyOOH)
+AdmitDirectlyOOH$SiteGroup[AdmitDirectlyOOH$SiteGroup == 1]<-"BH"
+AdmitDirectlyOOH$SiteGroup[AdmitDirectlyOOH$SiteGroup == 2]<-"DD"
+AdmitDirectlyOOH$SiteGroup[AdmitDirectlyOOH$SiteGroup == 3]<- "SA" 
+
+##MemberGender
+AdmitDirectlyOOH <- data.frame(AdmitDirectlyOOH)
+AdmitDirectlyOOH$MemberGender[AdmitDirectlyOOH$MemberGender == 1]<-"Female"
+AdmitDirectlyOOH$MemberGender[AdmitDirectlyOOH$MemberGender == 2]<-"Male"
+AdmitDirectlyOOH$MemberGender[AdmitDirectlyOOH$MemberGender == 3]<-"Unknown" 
+
+##MemberRace
+AdmitDirectlyOOH$MemberRaceEthnicity[AdmitDirectlyOOH$MemberRaceEthnicity == 1]<-"Black/African American"
+AdmitDirectlyOOH$MemberRaceEthnicity[AdmitDirectlyOOH$MemberRaceEthnicity == 2]<-"Hispanic/Lationo"
+AdmitDirectlyOOH$MemberRaceEthnicity[AdmitDirectlyOOH$MemberRaceEthnicity == 3]<-"Missing/Undetermined"
+AdmitDirectlyOOH$MemberRaceEthnicity[AdmitDirectlyOOH$MemberRaceEthnicity == 4]<-"Other"
+AdmitDirectlyOOH$MemberRaceEthnicity[AdmitDirectlyOOH$MemberRaceEthnicity == 5]<-"White"
+
+##Memeber Age group
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 1]<-"0-4"
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 2]<-"5-10"
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 3]<-"11-13"
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 4]<-"14-17"
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 5]<-"18-20"
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 6]<-"21"
+AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 7]<-">21"
+```
+
  ##Cohort
  ##How Many unique member Admit directly to OOH
 
@@ -339,6 +384,16 @@ length(unique(AdmitDirectlyOOH$memberid))
 
 ## Clinical Profile
 ## a. Diagnosis
+## what are the different Site Type and Site Group
+```{r}
+OOH_SiteGr <- AdmitDirectlyOOH %>%
+     select(memberid,SiteGroup,SiteType)%>%
+     group_by(SiteGroup,SiteType)%>%
+     summarise(dismem=n_distinct(memberid))%>%
+     arrange(desc(dismem))
+OOH_SiteGr
+```
+
 ```{r}
 OOH_diag <- AdmitDirectlyOOH %>%
      select(memberid,Diagnosis1,OOH)%>%
@@ -353,20 +408,30 @@ OOH_diag <- AdmitDirectlyOOH %>%
 ##Converting ICD10 code to SDoH Catagories
 ```{r,SDoH Diagnosis,include= FALSE}
 AdmitDirectlyOOH<- data.frame(AdmitDirectlyOOH)
+##Education
 AdmitDirectlyOOH$Diagnosis1[AdmitDirectlyOOH$Diagnosis1 == 'Z550' |AdmitDirectlyOOH$Diagnosis1 == 'Z551'|AdmitDirectlyOOH$Diagnosis1 == 'Z558'|AdmitDirectlyOOH$Diagnosis1 == 'Z559'] <-"Education"
+
+##Housing and Economic
+
 AdmitDirectlyOOH$Diagnosis1[AdmitDirectlyOOH$Diagnosis1 >= 'Z590' &AdmitDirectlyOOH$Diagnosis1 <= 'Z599'] <-"Housing and Economic"
+
+##Social Environment
 AdmitDirectlyOOH$Diagnosis1[AdmitDirectlyOOH$Diagnosis1 >= 'Z602' &AdmitDirectlyOOH$Diagnosis1 <= 'Z605' |
                            AdmitDirectlyOOH$Diagnosis1 == 'Z600' |
                             AdmitDirectlyOOH$Diagnosis1 == 'Z608' |
                             AdmitDirectlyOOH$Diagnosis1 == 'Z609']<-"Social Environment"
 
+##Stress
 AdmitDirectlyOOH$Diagnosis1[
     AdmitDirectlyOOH$Diagnosis1 == 'Z734' | AdmitDirectlyOOH$Diagnosis1 == 'Z7389' |
         AdmitDirectlyOOH$Diagnosis1 == 'Z733' | AdmitDirectlyOOH$Diagnosis1 == 'Z739' |
         AdmitDirectlyOOH$Diagnosis1 == 'Z659' |
         AdmitDirectlyOOH$Diagnosis1 == 'Z658']<-"Stress"
+
+##Experiences Crime,Violence,Judicial
 AdmitDirectlyOOH$Diagnosis1[AdmitDirectlyOOH$Diagnosis1 >= 'Z650' & AdmitDirectlyOOH$Diagnosis1 <= 'Z655'] <-"Experiences Crime,Violence,Judicial"
 
+##Upbringing
 AdmitDirectlyOOH$Diagnosis1[AdmitDirectlyOOH$Diagnosis1 == 'Z6221' | AdmitDirectlyOOH$Diagnosis1 == 'Z6222' |
                             AdmitDirectlyOOH$Diagnosis1 == 'Z6229' |
                             AdmitDirectlyOOH$Diagnosis1 == 'Z62810' |
@@ -471,10 +536,49 @@ df_MemberZipcode
 # ## Service Profile
 # ##Number of Admission to OOH for each enrolled
 ```{r}
+
 df_admit<- AdmitDirectlyOOH%>%
-           group_by(memberid )%>%
+            select(memberid,MemberAge,admitdate,dischargedate)%>%
+           group_by(memberid,MemberAge )%>%
            summarise(count=n_distinct(admitdate))%>%
            arrange(desc(count))
 df_admitdate <- data.frame(df_admit)
 df_admitdate
 ```
+#Length of Stay
+```{r}
+AdmitDirectlyOOH$admitdate <- as.Date(AdmitDirectlyOOH$admitdate)
+AdmitDirectlyOOH$dischargedate <- as.Date(AdmitDirectlyOOH$dischargedate)
+##Find length of stay
+df_los <-AdmitDirectlyOOH %>%
+         select(admitdate,dischargedate,memberid)%>%
+         #group_by(admitdate, dischargedate) %>%
+         mutate(lengthofstay = dischargedate - admitdate)%>%
+         arrange(desc(lengthofstay))
+df_los
+df_los <- data.frame(df_los)
+df_los$lengthofstay <-as.numeric(df_los$lengthofstay)
+str(df_los)
+summary(df_los$lengthofstay)
+mean(df_los$lengthofstay)
+##Find Mode of lengthofstay
+names(table(df_los$lengthofstay))[table(df_los$lengthofstay)==max(table(df_los$lengthofstay))]
+```
+
+##Boxplot 
+```{r}
+str(df_los)
+library(MASS)
+summary(df_los$lengthofstay)
+range(df_los$lengthofstay)
+boxplot(df_los$lengthofstay)
+```
+
+##This Informations are from RSPM_LOS table which contain all the  LOS for the members
+
+```{r}
+summary(OOH_LOS$LOS)
+# mean(df_los$lengthofstay)
+boxplot(LOS , data=OOH_LOS)
+```
+
