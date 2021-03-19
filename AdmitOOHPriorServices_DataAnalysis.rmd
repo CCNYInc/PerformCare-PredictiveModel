@@ -2,8 +2,11 @@
 title: "AdmitOOHPriorServices"
 author: "Sulagna Patra"
 date: "3/16/2021"
-output: html_document
----
+output: 
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
+ ---
 
 
 ```{r Setup and DB Connection, include=FALSE}
@@ -306,9 +309,6 @@ tb_SDoH_diag<-
 tb_SDoH_diag
 
 ```
-
- 
- 
 # Demographic
 # Race
 ```{r}
@@ -375,6 +375,7 @@ df_MemberZipcode <- AdmitOOHPriorServices%>%
           summarise(count=n_distinct(memberid))%>%
           arrange(desc(count))
 df_MemberZipcode
+# write_csv(df_MemberZipcode, path = "memberZipcode.csv")
 ```
 
  
@@ -431,11 +432,35 @@ df_8Amdit<- CT_8Amdit%>%
 df_8Amdit <- data.frame(df_8Amdit)
 df_8Amdit
 ```
+```{r, Pivote dataset Wide to Long}
+
+Admit8<-pivot_longer(df_8Amdit, -c(memberid), values_to = "Value", names_to = "Tenure")
+
+Admit8<-as.data.frame(Admit8)
+Admit8$memberid<-as.factor(Admit8$memberid)
+Plot_8admit<-ggplot(data=Admit8, aes(x=Tenure, y=Value, group=(memberid), color=memberid)) +
+    geom_line()+
+    geom_point()
+Plot_8admit
+```
+
 ```{r, CommunityTenureFor7Admits}
 df_7Amdit<- CT_7Amdit%>%
            dplyr:: select(memberid,CommunityTenure1,CommunityTenure2,CommunityTenure3,CommunityTenure4,CommunityTenure5,CommunityTenure6)
-df_7Amdit <- data.frame(df_8Amdit)
+df_7Amdit <- data.frame(df_7Amdit)
 df_7Amdit
+```
+
+```{r, Pivote dataset Wide to Long admit 7}
+
+Admit7<-pivot_longer(df_7Amdit, -c(memberid), values_to = "Value", names_to = "Tenure")
+
+Admit7<-as.data.frame(Admit7)
+Admit7$memberid<-as.factor(Admit7$memberid)
+Plot_7admit<-ggplot(data=Admit7, aes(x=Tenure, y=Value, group=(memberid), color=memberid)) +
+    geom_line()+
+    geom_point()+ggtitle("Plot of Member with 7 Admit")
+Plot_7admit
 ```
 ```{r, CommunityTenureFor6Admits}
 df_6Amdit<- CT_6Amdit%>%
@@ -443,6 +468,17 @@ df_6Amdit<- CT_6Amdit%>%
 df_6Amdit <- data.frame(df_6Amdit)
 df_6Amdit
 #mem-55272
+```
+
+```{r, Plot with 6 admit}
+Admit6<-pivot_longer(df_6Amdit, -c(memberid), values_to = "Value", names_to = "Tenure")
+
+Admit6<-as.data.frame(Admit6)
+Admit6$memberid<-as.factor(Admit6$memberid)
+Plot_6admit<-ggplot(data=Admit6, aes(x=Tenure, y=Value, group=(memberid), color=memberid)) +
+    geom_line()+
+    geom_point()+ggtitle("Plot of Member with 6 Admit")
+Plot_6admit
 ```
 ```{r, CommunityTenureFor5Admits}
 df_5Amdit<- CT_5Amdit%>%
