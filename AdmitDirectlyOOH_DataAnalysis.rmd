@@ -86,257 +86,9 @@ colSums(sapply(AdmitDirectlyOOH, is.na))
 ```
 
 
-<!--  ```{r} -->
-<!-- #length(unique(AdmitDirectlyOOH$ProviderType)) -->
-<!-- ``` -->
 
-<!-- # # ProviderType_tb <- ProviderType_tb %>% -->
-<!-- # #             arrange(desc(Freq)) -->
-<!-- # # ProviderType_tb <-flextable(ProviderType_tb) -->
-<!-- # # ProviderType_tb -->
-<!-- # ``` -->
-<!-- # ## Overall record in 26 unique provider County -->
-<!-- # ```{r} -->
-<!-- # length(unique(RSPM_DataSet$ProviderCounty)) -->
-<!-- # # table(RSPM_DataSet$ProviderCounty,RSPM_DataSet$OOH ) -->
-<!-- # ``` -->
-<!-- # ```{r, include=FALSE} -->
-<!-- # ProviderCounty_tb<-data.frame(table(RSPM_DataSet[,"ProviderCounty"])) -->
-<!-- # ProviderCounty_tb <- ProviderCounty_tb %>% -->
-<!-- #     arrange(desc(Freq)) -->
-<!-- # ProviderCounty_tb <-flextable(ProviderCounty_tb) -->
-<!-- # ProviderCounty_tb -->
-<!-- # ``` -->
-<!-- # ##How many Unique Diagnosis1 -->
-<!-- # ```{r} -->
-<!-- # length(unique(RSPM_DataSet$Diagnosis1)) -->
-<!-- # #table(RSPM_OOH_Claims_History$ProviderCounty) -->
-<!-- # ``` -->
-<!-- # -->
-
-
-<!-- # ```{r, include=FALSE} -->
-<!-- # # Diagnosis1_tb<- data.frame( table(RSPM_DataSet[,"Diagnosis1"])) -->
-<!-- # # Diagnosis1_tb <- Diagnosis1_tb %>% -->
-<!-- # #             arrange(desc(Freq)) -->
-<!-- # #Diagnosis1_tb -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # ## Find the number of unique member in each Diagnosis1 -->
-<!-- # ```{r} -->
-<!-- # Tb_Diagnosis1  <-RSPM_DataSet %>% -->
-<!-- #     select(Diagnosis1 ,memberid)%>% -->
-<!-- #     group_by(Diagnosis1 )%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid)) -->
-<!-- # Tb_Diagnosis1 <-Tb_Diagnosis1  %>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # Tb_Diagnosis1 -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # ```{r} -->
-<!-- # length(unique(RSPM_DataSet$OOH)) -->
-<!-- # ``` -->
-<!-- # ## How many unique member in the dataset -->
-<!-- # ```{r , function} -->
-<!-- # length(unique(RSPM_DataSet$memberid)) -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # #This dataset contains 148199 unique members -->
-<!-- # -->
-<!-- # ##Distribution of OOH in the dataset -->
-<!-- # ```{r} -->
-<!-- # tb <-table((RSPM_DataSet$OOH)) -->
-<!-- # prop.table(tb)*100 -->
-<!-- # -->
-<!-- # ``` -->
-<!-- # ## how many unique member in OOH pacement catagory -->
-<!-- # ```{r} -->
-<!-- # OOH_df <- RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid)%>% -->
-<!-- #     group_by( OOH)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid))%>% -->
-<!-- #     mutate(pct =(dismem_ct/sum(dismem_ct)*100) )%>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # OOH_df -->
-<!-- # -->
-<!-- # ``` -->
-<!-- # ## How many unique member in different age and OOH placement -->
-<!-- # -->
-<!-- # ```{r} -->
-<!-- # OOH_agedf <- RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid,MemberAge,MemberGender,MemberEnrollmentAge,MemberRaceEthnicity)%>% -->
-<!-- #     group_by(MemberAge, OOH)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid))%>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # OOH_agedf -->
-<!-- # ``` -->
-<!-- # ## How many unique member in Each age and OOH placement is 1 -->
-<!-- # ```{r} -->
-<!-- # OOH_df <- RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid,MemberAge,MemberGender,MemberEnrollmentAge,MemberRaceEthnicity)%>% -->
-<!-- #     group_by(MemberAge, OOH)%>% -->
-<!-- #     filter(OOH ==1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid))%>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # OOH_df -->
-<!-- # -->
-<!-- # ``` -->
-<!-- # ## Find the unique member in each enrollment age and placed in OOH -->
-<!-- # -->
-<!-- # ```{r} -->
-<!-- # Tb_MemDemo  <-RSPM_DataSet %>% -->
-<!-- #     select(MemberEnrollmentAge,OOH,memberid,MemberAge,MemberGender)%>% -->
-<!-- #     group_by(MemberEnrollmentAge,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid)) -->
-<!-- # Tb_EnrollAge  <-Tb_MemDemo   %>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # Tb_EnrollAge -->
-<!-- # ``` -->
-<!-- # ## Unique Member in each gender -->
-<!-- # ```{r} -->
-<!-- # OOH_Gender  <-RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid,MemberAge,MemberGender)%>% -->
-<!-- #     group_by(MemberGender,OOH )%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid)) -->
-<!-- # -->
-<!-- # OOH_Gender -->
-<!-- # ``` -->
-<!-- # ## Member EnrollmentAge Vs OOH -->
-<!-- # ```{r} -->
-<!-- # xtabs( ~ MemberEnrollmentAge+OOH,RSPM_DataSet) -->
-<!-- # ``` -->
-<!-- # ## Unique Member in each MemberEnrollmentAge with OOH placement -->
-<!-- # ```{r} -->
-<!-- # OOH_EnrollAge  <-RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid,MemberEnrollmentAge,MemberGender)%>% -->
-<!-- #     group_by(MemberEnrollmentAge,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid))%>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # -->
-<!-- # OOH_EnrollAge -->
-<!-- # ``` -->
-<!-- # ## Age group Vs OOH -->
-<!-- # ```{r} -->
-<!-- # #xtabs(~ MemberAgeGroup+OOH,data=RSPM_DataSet) -->
-<!-- # ``` -->
-<!-- # ## Unique Member in each MemberAgeGroup with OOH placement -->
-<!-- # ```{r} -->
-<!-- # OOH_AgeGr  <-RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid,MemberAgeGroup,MemberGender)%>% -->
-<!-- #     group_by(MemberAgeGroup,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid))%>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # -->
-<!-- # OOH_AgeGr -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # -->
-<!-- # -->
-<!-- # ## Gender vs OOH -->
-<!-- # ```{r} -->
-<!-- # table(RSPM_DataSet$MemberGender,RSPM_DataSet$OOH) -->
-<!-- # ``` -->
-<!-- # ## Unique Member in each MemberGender with OOH placement -->
-<!-- # ```{r} -->
-<!-- # OOH_MemberGender  <-RSPM_DataSet %>% -->
-<!-- #     select(OOH,memberid,MemberAgeGroup,MemberGender)%>% -->
-<!-- #     group_by(MemberGender,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid))%>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # -->
-<!-- # OOH_MemberGender -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # -->
-<!-- # -->
-<!-- # ## Race vs OOH -->
-<!-- # ```{r} -->
-<!-- # # table(RSPM_DataSet$MemberRaceEthnicity,RSPM_DataSet$OOH) -->
-<!-- # xtabs(~ MemberRaceEthnicity+OOH, data=RSPM_DataSet) -->
-<!-- # ``` -->
-<!-- # ## Service Code vs OOH -->
-<!-- # ```{r} -->
-<!-- # length(unique(RSPM_DataSet$ServiceCode)) -->
-<!-- # #xtabs(~ ServiceCode+OOH, data=RSPM_DataSet) -->
-<!-- # ``` -->
-<!-- # ## Find the number of unique member in each Service code and OOH -->
-<!-- # ```{r} -->
-<!-- # Tb_ServiceCode  <-RSPM_DataSet %>% -->
-<!-- #     select(ServiceCode,OOH,memberid)%>% -->
-<!-- #     group_by(ServiceCode,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid)) -->
-<!-- # Tb_ServiceCode <- Tb_ServiceCode   %>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # Tb_ServiceCode -->
-<!-- # ``` -->
-<!-- # ## Find the number of unique member in each member county and OOH -->
-<!-- # ```{r} -->
-<!-- # Tb_county  <-RSPM_DataSet %>% -->
-<!-- #     select(MemberZipCode,OOH,memberid)%>% -->
-<!-- #     group_by(MemberZipCode,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid)) -->
-<!-- # Tb_county  <- Tb_county   %>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # Tb_county -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # ## Find the number of unique member in different diagnosis1 who are placed in OOH -->
-<!-- # -->
-<!-- # ```{r} -->
-<!-- # Tb_Diagnosis1  <-RSPM_DataSet %>% -->
-<!-- #     select(Diagnosis1,OOH,memberid)%>% -->
-<!-- #     group_by(Diagnosis1,OOH )%>% -->
-<!-- #     filter(OOH == 1)%>% -->
-<!-- #     summarise(dismem_ct=n_distinct(memberid)) -->
-<!-- # Tb_Diagnosis1  <- Tb_Diagnosis1   %>% -->
-<!-- #     arrange(desc(dismem_ct)) -->
-<!-- # Tb_Diagnosis1 -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # ## Is there any significant relation between Age/Race/gender with OOH Placement -->
-<!-- # ```{r, include=FALSE} -->
-<!-- # #  model1 <-glm(OOH ~ MemberAge+MemberGender+MemberRaceEthnicity,data=RSPM_DataSet, family=binomial()) -->
-<!-- # # summary(model1) -->
-<!-- # ``` -->
-<!-- # -->
-<!-- # ##ggplot Gender Vs OOH -->
-<!-- # ```{r} -->
-<!-- # df_Gender <- RSPM_DataSet%>% -->
-<!-- # -->
-<!-- #     group_by(MemberGender,OOH )%>% -->
-<!-- #     summarise(count=n()) -->
-<!-- # df_Gender <- data.frame(df_Gender) -->
-<!-- # plot_gender<- ggplot(data=df_Gender,aes(x =MemberGender,y=count,fill = as.factor(OOH)))+ geom_bar(stat="identity",position = position_dodge())+theme_minimal() -->
-<!-- # plot_gender -->
-<!-- # ``` -->
-<!-- # ##ggplot Race Vs OOH -->
-<!-- # ```{r} -->
-<!-- # df_Race <- RSPM_DataSet%>% -->
-<!-- # -->
-<!-- #     group_by(MemberRaceEthnicity,OOH )%>% -->
-<!-- #     summarise(count=n()) -->
-<!-- # df_Race <- data.frame(df_Race) -->
-<!-- # plot_Race<- ggplot(data=df_Race,aes(x =MemberRaceEthnicity,y=count,fill = as.factor(OOH)))+ geom_bar(stat="identity",position = position_dodge())+theme_minimal() -->
-<!-- # plot_Race -->
-<!-- # ``` -->
-<!-- # ##ggplot AgeGr Vs OOH -->
-<!-- # ```{r} -->
-<!-- # df_AgeGr <- RSPM_DataSet%>% -->
-<!-- # -->
-<!-- #     group_by(MemberAgeGroup,OOH )%>% -->
-<!-- #     summarise(count=n()) -->
-<!-- # df_AgeGr <- data.frame(df_AgeGr) -->
-<!-- # plot_AgeGr<- ggplot(data=df_AgeGr,aes(x =MemberAgeGroup,y=count,fill = as.factor(OOH)))+ geom_bar(width=1,stat="identity",position = position_dodge())+theme_minimal() -->
-<!-- # plot_AgeGr -->
-<!-- # ``` -->
 ##Converting column to catagorical Variable
-```{r}
+```{r, include=FALSE}
 ##SiteGroup
 AdmitDirectlyOOH <- data.frame(AdmitDirectlyOOH)
 AdmitDirectlyOOH$SiteGroup[AdmitDirectlyOOH$SiteGroup == 1]<-"BH"
@@ -368,26 +120,30 @@ AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 7]<-">21"
 
  ##Cohort
  ##How Many unique member Admit directly to OOH
+ ## Clinical Profile
+## a. Diagnosis
 
 ```{r}
 length(unique(AdmitDirectlyOOH$memberid))
-# OOH_df <- AdmitDirectlyOOH %>%
-#     select(OOH,memberid)%>%
-#     group_by( OOH)%>%
-#      summarise(dismem_ct=n_distinct(memberid))%>%
-#      arrange(desc(dismem_ct))
-#  OOH_df
+length(unique(AdmitDirectlyOOH$Diagnosis1))
+DiagGr <- AdmitDirectlyOOH %>%
+    dplyr::select(Diagnosis1,SiteGroup,memberid)%>%
+    group_by(SiteGroup)%>%
+     summarise(disDia=n_distinct(Diagnosis1))%>%
+     arrange(desc(disDia))
+DiagGr
 
 ```
 
 # 1682 are admitted directly to OOH without any previous Services
+# Number of Diagnosis in each Group such as BH,DD and SA
 
-## Clinical Profile
-## a. Diagnosis
+
+
 ## what are the different Site Type and Site Group
 ```{r}
 OOH_SiteGr <- AdmitDirectlyOOH %>%
-     select(memberid,SiteGroup,SiteType)%>%
+     dplyr::select(memberid,SiteGroup,SiteType)%>%
      group_by(SiteGroup,SiteType)%>%
      summarise(dismem=n_distinct(memberid))%>%
      arrange(desc(dismem))
@@ -396,13 +152,31 @@ OOH_SiteGr
 
 ```{r}
 OOH_diag <- AdmitDirectlyOOH %>%
-     select(memberid,Diagnosis1,OOH)%>%
+     dplyr::select(memberid,Diagnosis1)%>%
      group_by(memberid)%>%
-     filter( OOH== 1)%>%
      summarise(disDiag=n_distinct(Diagnosis1))%>%
+     
      arrange(desc(disDiag))
  OOH_diag
+ 
+ 
+ 
+ 
+```
+```{r}
+OOH_mem <- AdmitDirectlyOOH %>%
+     dplyr::select(memberid,Diagnosis1)%>%
+     group_by(Diagnosis1)%>%
+     summarise(disct=n_distinct(memberid))%>%
+     
+     arrange(desc(disct))
+ OOH_mem
+```
 
+```{r, Plot Nummber of distinct diagnosis per member}
+ OOH_diag<- as.data.frame( OOH_diag)
+ plot_mem<- ggplot(data=OOH_diag,aes(x =memberid,y=disDiag))+ geom_bar(stat="identity")+ggtitle("Plot of Each With Diag") 
+ plot_mem
 ```
  
 ##Converting ICD10 code to SDoH Catagories
@@ -555,7 +329,7 @@ df_los <-AdmitDirectlyOOH %>%
          #group_by(admitdate, dischargedate) %>%
          mutate(lengthofstay = dischargedate - admitdate)%>%
          arrange(desc(lengthofstay))
-df_los
+#df_los
 df_los <- data.frame(df_los)
 df_los$lengthofstay <-as.numeric(df_los$lengthofstay)
 str(df_los)
@@ -579,6 +353,6 @@ boxplot(df_los$lengthofstay)
 ```{r}
 summary(OOH_LOS$LOS)
 # mean(df_los$lengthofstay)
-boxplot(LOS , data=OOH_LOS)
+boxplot(OOH_LOS$LOS , data=OOH_LOS)
 ```
 
