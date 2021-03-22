@@ -44,6 +44,25 @@ AdmitOOHPriorServices<- tbl_long_cols_2(con, "RSPM_AdmitOOHPriorServices")%>%
     collect()
 
 ```
+##Pulling AdmitOOHPriorServices_LOS Table
+```{r, include= FALSE}
+tbl_long_cols_2 <- function(con, table) {
+    cols_sorted <-
+        odbc::odbcConnectionColumns(con, table) %>%
+        dplyr::arrange(column_size) %>%
+        pull(name)
+    
+    dplyr::tbl(con, table) %>%
+        dplyr::select(tidyselect::all_of(cols_sorted))
+}
+AdmitOOHPS_LOS<- tbl_long_cols_2(con, "RSPM_LOS_AdmitOOHPriorServices")%>%
+    collect()
+
+```
+
+
+
+
 ##Pulling CommunityTenure
 ```{r, include= FALSE}
 tbl_long_cols_2 <- function(con, table) {
@@ -507,3 +526,48 @@ df_2Amdit<- CT_2Amdit%>%
 df_2Amdit <- data.frame(df_2Amdit)
 df_2Amdit
 ```
+##This Informations are from RSPM_LOS_AdmitOOHPriorServices table which contain AdmitOOHPriorServices for the members
+
+##Total number of admission to OOH Placement and their mean, Median and Mode
+
+```{r}
+summary(AdmitOOHPS_LOS$LOS)
+# mean(df_los$lengthofstay)
+boxplot(AdmitOOHPS_LOS$LOS , data=AdmitOOHPS_LOS)
+hist(AdmitOOHPS_LOS$LOS,xlim=c(-60,1769), breaks=10,col="green", freq = FALSE)
+#abline(v = 12, lwd = 2)
+abline(v = median(AdmitOOHPS_LOS$LOS), col = "magenta", lwd = 4)
+x <- seq(-60, 1769, length.out=1000)
+y <- y <- with(AdmitOOHPS_LOS, dnorm(x, mean(LOS), sd(LOS)))
+lines(x, y, col = "red")
+```
+
+```{r, mode of AdmitDirectlyOOH}
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+getmode(AdmitOOHPS_LOS$LOS)
+names(table(AdmitOOHPS_LOS$LOS))[table(AdmitOOHPS_LOS$LOS)==max(table(AdmitOOHPS_LOS$LOS))]
+```
+
+## Total Number of Admission by each member and mean LOS
+```{r, Each Member LOS}
+LOS_permember<-AdmitOOHPS_LOS %>%
+           group_by(memberid)%>%
+        summarise(count=n(),Max_LOS=max(LOS),Min_LOS=min(LOS),Avg_LOS=mean(LOS),.groups = 'drop')%>%
+    arrange(desc(count))
+  LOS_permember<-data.frame( LOS_permember)
+  LOS_permember
+```
+
+```{r, Each Member LOS}
+summary(LOS_permember$Avg_LOS)
+#plot(Avg_LOS~ count, data=LOS_permember)
+ggplot(LOS_permember, aes(x=Avg_LOS, y=count)) + geom_point()
+ hist(LOS_permember$Avg_LOS,xlim=c(0,1500), breaks=10,col="green", freq = FALSE)
+#abline(v = 12, lwd = 2)
+abline(v = median(LOS_permember$Avg_LOS), col = "magenta", lwd = 4)
+```
+
