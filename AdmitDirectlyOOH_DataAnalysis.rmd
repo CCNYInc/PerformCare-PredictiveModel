@@ -1,7 +1,7 @@
 ---
-title: "AdmitDirectlyOOH"
+title: "tblAdmitDirectlyOOH"
 author: "Sulagna Patra"
-date: "3/14/2021"
+date: "3/28/2021"
 output: html_document
 ---
 
@@ -31,11 +31,11 @@ tbl_long_cols_2 <- function(con, table) {
         odbc::odbcConnectionColumns(con, table) %>%
         dplyr::arrange(column_size) %>%
         pull(name)
-    
+
     dplyr::tbl(con, table) %>%
         dplyr::select(tidyselect::all_of(cols_sorted))
 }
-AdmitDirectlyOOH<- tbl_long_cols_2(con, "RSPM_AdmitDirectlyOOH")%>%
+AdmitDirectlyOOH<- tbl_long_cols_2(con, "RSPM_tblAdmitDirectlyOOH")%>%
     collect()
 
 ```
@@ -127,7 +127,7 @@ AdmitDirectlyOOH$MemberAgeGroup[AdmitDirectlyOOH$MemberAgeGroup == 7]<-">21"
 length(unique(AdmitDirectlyOOH$memberid))
 length(unique(AdmitDirectlyOOH$Diagnosis1))
 DiagGr <- AdmitDirectlyOOH %>%
-    dplyr::select(Diagnosis1,SiteGroup,memberid)%>%
+    dplyr::select(Diagnosis1,SiteGroup,SiteType,memberid)%>%
     group_by(SiteGroup)%>%
      summarise(disDia=n_distinct(Diagnosis1))%>%
      arrange(desc(disDia))
@@ -174,9 +174,9 @@ OOH_mem <- AdmitDirectlyOOH %>%
 ```
 
 ```{r, Plot Nummber of distinct diagnosis per member}
- OOH_diag<- as.data.frame( OOH_diag)
- plot_mem<- ggplot(data=OOH_diag,aes(x =memberid,y=disDiag))+ geom_bar(stat="identity")+ggtitle("Plot of Each With Diag") 
- plot_mem
+ # OOH_diag<- as.data.frame( OOH_diag)
+ # plot_mem<- ggplot(data=OOH_diag,aes(x =memberid,y=disDiag))+ geom_bar(stat="identity")+ggtitle("Plot of Each With Diag") 
+ # plot_mem
 ```
  
 ##Converting ICD10 code to SDoH Catagories
@@ -321,31 +321,31 @@ df_admitdate
 ```
 #Length of Stay
 ```{r}
-AdmitDirectlyOOH$admitdate <- as.Date(AdmitDirectlyOOH$admitdate)
-AdmitDirectlyOOH$dischargedate <- as.Date(AdmitDirectlyOOH$dischargedate)
-##Find length of stay
-df_los <-AdmitDirectlyOOH %>%
-         select(admitdate,dischargedate,memberid)%>%
-         #group_by(admitdate, dischargedate) %>%
-         mutate(lengthofstay = dischargedate - admitdate)%>%
-         arrange(desc(lengthofstay))
-#df_los
-df_los <- data.frame(df_los)
-df_los$lengthofstay <-as.numeric(df_los$lengthofstay)
-str(df_los)
-summary(df_los$lengthofstay)
-mean(df_los$lengthofstay)
-##Find Mode of lengthofstay
-names(table(df_los$lengthofstay))[table(df_los$lengthofstay)==max(table(df_los$lengthofstay))]
+# AdmitDirectlyOOH$admitdate <- as.Date(AdmitDirectlyOOH$admitdate)
+# AdmitDirectlyOOH$dischargedate <- as.Date(AdmitDirectlyOOH$dischargedate)
+# ##Find length of stay
+# df_los <-AdmitDirectlyOOH %>%
+#          select(admitdate,dischargedate,memberid)%>%
+#          #group_by(admitdate, dischargedate) %>%
+#          mutate(lengthofstay = dischargedate - admitdate)%>%
+#          arrange(desc(lengthofstay))
+# #df_los
+# df_los <- data.frame(df_los)
+# df_los$lengthofstay <-as.numeric(df_los$lengthofstay)
+# str(df_los)
+# summary(df_los$lengthofstay)
+# mean(df_los$lengthofstay)
+# ##Find Mode of lengthofstay
+# names(table(df_los$lengthofstay))[table(df_los$lengthofstay)==max(table(df_los$lengthofstay))]
 ```
 
 ##Boxplot 
 ```{r}
-str(df_los)
-library(MASS)
-summary(df_los$lengthofstay)
-range(df_los$lengthofstay)
-boxplot(df_los$lengthofstay)
+# str(df_los)
+# library(MASS)
+# summary(df_los$lengthofstay)
+# range(df_los$lengthofstay)
+# boxplot(df_los$lengthofstay)
 ```
 
 ##This Informations are from AdmitDirectlyOOH_LOS table which contain AdmitDirectly for the members
@@ -375,7 +375,7 @@ names(table(AdmitDirectlyOOH_LOS$LOS))[table(AdmitDirectlyOOH_LOS$LOS)==max(tabl
 ```
 
 ## Total Number of Admission by each member and mean LOS
-```{r, Each Member LOS}
+```{r, Each Member LOS1}
 LOS_permember<-AdmitDirectlyOOH_LOS %>%
            group_by(memberid)%>%
         summarise(count=n(),Max_LOS=max(LOS),Min_LOS=min(LOS),Avg_LOS=mean(LOS),.groups = 'drop')%>%
@@ -384,7 +384,7 @@ LOS_permember<-AdmitDirectlyOOH_LOS %>%
   LOS_permember
 ```
 
-```{r, Each Member LOS}
+```{r, Each Member LOS on Average LOS}
 summary(LOS_permember$Avg_LOS)
 #plot(Avg_LOS~ count, data=LOS_permember)
 ggplot(LOS_permember, aes(x=Avg_LOS, y=count)) + geom_point()
