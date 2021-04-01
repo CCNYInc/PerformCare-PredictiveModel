@@ -1,0 +1,76 @@
+---
+title: "Big Data Guide"
+output: html_notebook
+---
+## INTRODUCTION
+
+Big Data is a tough and difficult subject to work with. Fortunately for us R makes it easy to for us to deal with such situations. R has various libraries that allows for these tasks to be trivialized within the R ecosystem. 
+
+When dealing with large data sets we as analysts are limited by our computers RAM to run analysis on. If we were to bring in the whole data set and work on it within R it would most likely crash our machines. There are a few methods as to how we can go about circumnavigating this issue but we will be focusing on two major techniques that are fairly simple to grasp and works well in tandem. 
+
+
+
+
+## Methods
+
+### No Local Data
+
+Let's talk about the package dplyr. This is an extremely versatile package for data analysis within R. The package natively handles abstraction of sql.
+
+#### Example
+
+Lets look at some sample code for dplyr. Firstly we will connect to a database using dplyr. This package natively supports various types of data warehouse solutions but for the purpose of this project we will use SQL.
+
+Lets first setup a connection and connect to a table
+```{r}
+library(odbc)
+library(DBI)
+library(dplyr)
+library(dbplyr)
+
+db <- DBI::dbConnect(odbc::odbc(), 
+                      Driver = "SQL Server", 
+                      Server =  "pcnjdevsql02",
+                      Database = "PIE_Dev",
+                      Trusted_Connection = "True")
+
+data <- tbl(db,"RSPM_DataSet")
+data
+
+```
+The cool thing that dpyrl does is that it allows you to see what the query is that allows for the data to arraive to the project. This is why it is much faster to work with this method since you are technically not gathering the data but rather buiding a query that allows for the data to be created!
+
+```{r}
+
+show_query(data)
+```
+There are many functions that dbplyr has that allows you to create sql queries abstractly. These functions (with the assistance of other built in aggregate functions) Will allow you to wrangle the data, create new variables, rearrange variables, and much more!
+
+Here are some examples!
+
+```{r}
+arranged_filtered <- data %>%
+    arrange(desc(serviceenddate)) %>% # You can add DESC function to a column (Each of these functions )
+    filter(!is.na(admitdate))
+
+random_sampled_data <- data %>%
+    mutate(sampled_var= (abs(checksum(newid()))%%100 ))%>% # newid cehcksum and abs  are SQL Functions they are not associated with R! 
+    collapse() %>% # Creates a temp table to store the data in to allow for the new column to be created and filtered by
+    filter(sampled_var <=1)
+
+random_sampled_data
+```
+
+As we can see that all these steps are fairly quick since noen of the data is being created/stored into the project allowing you to efficiently create the data you want and model using the random sample. 
+
+Here is how we would bring in the data
+```{r}
+collect(random_sampled_data)
+```
+
+This step will indeed take some time (no going aroudn it since we are bringing in the data from that large table) (for me it took 8 seconds) 
+now we have a sample of the data! 
+
+
+If and when you need to bring in data try using a small sample of it to create the model than apply the model into a lookup table to assign the model onto the whole data set over at the sql server. 
+
